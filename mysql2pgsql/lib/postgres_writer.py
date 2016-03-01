@@ -77,16 +77,16 @@ class PostgresWriter(object):
             elif column['type'] == 'double precision':
                 default = (" DEFAULT %s" % (column['default'] if t(column['default']) else 'NULL')) if t(default) else None
                 return default, 'double precision'
-            elif column['type'] == 'datetime':
+            elif column['type'].startswith('datetime'):
                 default = None
                 if self.tz:
                     return default, 'timestamp with time zone'
                 else:
                     return default, 'timestamp without time zone'
-            elif column['type'] == 'date':
+            elif column['type'].startswith('date'):
                 default = None
                 return default, 'date'
-            elif column['type'] == 'timestamp':
+            elif column['type'].startswith('timestamp'):
                 if column['default'] == None:
                     default = None
                 elif "CURRENT_TIMESTAMP" in column['default']:
@@ -102,7 +102,7 @@ class PostgresWriter(object):
                     return default, 'timestamp with time zone'
                 else:
                     return default, 'timestamp without time zone'
-            elif column['type'] == 'time':
+            elif column['type'].startswith('time'):
                 default = " DEFAULT NOW()" if t(default) else None
                 if self.tz:
                     return default, 'time with time zone'
@@ -125,6 +125,7 @@ class PostgresWriter(object):
                     default = ' DEFAULT ARRAY[%s]::text[]' % ','.join(QuotedString(v).getquoted() for v in re.search(r"'(.*)'", default).group(1).split(','))
                 return default, 'text[]'
             else:
+                print column
                 raise Exception('unknown %s' % column['type'])
 
         default, column_type = get_type(column)
